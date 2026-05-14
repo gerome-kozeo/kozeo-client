@@ -1,10 +1,8 @@
 import { notFound, redirect } from "next/navigation";
-import { BillsList } from "@/components/bills-list";
 import { ClientHeader } from "@/components/client-header";
+import { ClientTabs } from "@/components/client-tabs";
 import { ContactBloc } from "@/components/contact-bloc";
 import { DeroulePose } from "@/components/deroule-pose";
-import { DevisList } from "@/components/devis-list";
-import { InterventionsList } from "@/components/interventions-list";
 import { fetchClientBundle } from "@/lib/interfast";
 import { categorieFromDevis } from "@/lib/prestation";
 import { verifyClientToken } from "@/lib/token";
@@ -26,15 +24,18 @@ export default async function ClientPage({ params }: { params: Params }) {
   }
 
   const lastSignedDevis =
-    bundle.devis.find((d) => d.status === "signed") ?? bundle.devis[0];
+    bundle.devis.find((d) => d.status === "signed" || d.status === "paid") ?? bundle.devis[0];
   const categorie = categorieFromDevis(lastSignedDevis);
 
   return (
-    <main className="mx-auto flex max-w-3xl flex-col gap-10 px-5 py-10 md:py-14">
+    <main className="mx-auto flex max-w-3xl flex-col gap-8 px-5 py-10 md:py-14">
       <ClientHeader client={bundle.client} />
-      <InterventionsList interventions={bundle.interventions} />
-      <DevisList devis={bundle.devis} />
-      <BillsList bills={bundle.bills} />
+      <ClientTabs
+        interventions={bundle.interventions}
+        devis={bundle.devis}
+        bills={bundle.bills}
+        token={params.token}
+      />
       <DeroulePose categorie={categorie} />
       <ContactBloc />
       <footer className="border-t border-black/[0.06] pt-6 text-xs text-kozeo-violet/40">

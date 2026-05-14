@@ -13,10 +13,16 @@ const STATUS_BADGE: Record<Devis["status"], { label: string; className: string }
   paid: { label: "Payé", className: "bg-kozeo-vert/15 text-kozeo-vert-dark border-kozeo-vert/40" },
 };
 
-export function DevisList({ devis }: { devis: Devis[] }) {
+function fmtSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes} o`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} Ko`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} Mo`;
+}
+
+export function DevisList({ devis, token }: { devis: Devis[]; token: string }) {
   if (devis.length === 0) {
     return (
-      <Section title="Vos devis et factures" eyebrow="Documents">
+      <Section title="Vos devis" eyebrow="Documents">
         <Card>
           <CardContent>
             <p className="text-sm text-kozeo-violet/60">Aucun devis pour le moment.</p>
@@ -27,7 +33,7 @@ export function DevisList({ devis }: { devis: Devis[] }) {
   }
 
   return (
-    <Section title="Vos devis et factures" eyebrow="Documents">
+    <Section title="Vos devis" eyebrow="Documents">
       <ul className="flex flex-col gap-3">
         {devis.map((d) => {
           const badge = STATUS_BADGE[d.status];
@@ -76,22 +82,46 @@ export function DevisList({ devis }: { devis: Devis[] }) {
                     ) : null}
                     <div className="flex flex-col">
                       <dt className="text-xs text-kozeo-violet/50">Reste à payer</dt>
-                      <dd className="font-semibold text-kozeo-orange">{formatEUR(d.soldeRestant)}</dd>
+                      <dd className={cn("font-semibold", d.soldeRestant > 0 ? "text-kozeo-orange" : "text-kozeo-vert-dark")}>
+                        {formatEUR(d.soldeRestant)}
+                      </dd>
                     </div>
                   </dl>
 
-                  {d.pdfUrl ? (
+                  <div className="flex flex-wrap gap-2 border-t border-black/[0.05] pt-4">
                     <a
-                      href={d.pdfUrl}
-                      className="text-sm font-medium text-kozeo-vert-dark underline underline-offset-4 hover:text-kozeo-vert"
+                      href={`/api/devis/${d.id}/pdf?token=${encodeURIComponent(token)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex h-9 items-center gap-1.5 rounded-full bg-kozeo-vert-accent px-4 text-sm font-medium text-white hover:bg-kozeo-vert-dark"
                     >
-                      Télécharger le devis (PDF)
+                      📄 Voir le devis PDF
                     </a>
-                  ) : (
-                    <p className="text-xs text-kozeo-violet/40">
-                      PDF disponible sur demande — contactez-nous pour recevoir une copie.
-                    </p>
-                  )}
+                  </div>
+
+                  {d.attachments.length > 0 ? (
+                    <div className="flex flex-col gap-2 border-t border-black/[0.05] pt-4">
+                      <span className="text-xs font-medium uppercase tracking-wider text-kozeo-violet/50">
+                        Pièces jointes ({d.attachments.length})
+                      </span>
+                      <ul className="flex flex-col gap-1.5">
+                        {d.attachments.map((a) => (
+                          <li key={a.id} className="flex items-center justify-between gap-2">
+                            <a
+                              href={`/api/devis/${d.id}/files/${a.id}?name=${encodeURIComponent(a.name)}&token=${encodeURIComponent(token)}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center gap-2 text-sm text-kozeo-vert-dark underline underline-offset-4 hover:text-kozeo-vert"
+                            >
+                              <span aria-hidden>📎</span>
+                              <span className="truncate">{a.name}</span>
+                            </a>
+                            <span className="shrink-0 text-xs text-kozeo-violet/40">{fmtSize(a.size)}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ) : null}
                 </CardContent>
               </Card>
             </li>

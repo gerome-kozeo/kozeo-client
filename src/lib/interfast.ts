@@ -1,6 +1,7 @@
 import "server-only";
 import { MOCK_CLIENTS } from "./interfast-mock";
 import type {
+  Attachment,
   Bill,
   BillStatus,
   Civility,
@@ -19,9 +20,12 @@ function useMock(): boolean {
   return !process.env.IF_API_KEY;
 }
 
+function getBase(): string {
+  return process.env.IF_API_BASE || "https://app.inter-fast.fr/v1";
+}
+
 async function ifFetch<T>(path: string): Promise<T> {
-  const base = process.env.IF_API_BASE || "https://app.inter-fast.fr/v1";
-  const url = `${base}${path}`;
+  const url = `${getBase()}${path}`;
   const ctrl = new AbortController();
   const timeout = setTimeout(() => ctrl.abort(), TIMEOUT_MS);
   try {
@@ -43,6 +47,16 @@ async function ifFetch<T>(path: string): Promise<T> {
   }
 }
 
+export async function ifFetchStream(path: string): Promise<Response> {
+  const url = `${getBase()}${path}`;
+  return fetch(url, {
+    headers: {
+      "X-Api-Key": process.env.IF_API_KEY!,
+    },
+    cache: "no-store",
+  });
+}
+
 export async function fetchClientBundle(clientId: string): Promise<ClientBundle | null> {
   if (useMock()) {
     return MOCK_CLIENTS[clientId] ?? null;
@@ -55,10 +69,22 @@ export async function fetchClientBundle(clientId: string): Promise<ClientBundle 
       ifFetch<IfPaginated<IfBilling>>(`/billing/quotations?page=0&size=100&clients[]=${id}`),
       ifFetch<IfPaginated<IfBilling>>(`/billing/bills?page=0&size=100&clients[]=${id}`),
     ]);
+
+    const devisWithAttachments = await Promise.all(
+      quotations.items.map(async (q) => {
+        try {
+          const detail = await ifFetch<IfQuotationDetail>(`/billing/quotations/${q.id}`);
+          return normalizeQuotation(q, detail.attachements ?? []);
+        } catch {
+          return normalizeQuotation(q, []);
+        }
+      }),
+    );
+
     return {
       client: normalizeClient(client),
       interventions: events.items.map(normalizeEvent),
-      devis: quotations.items.map(normalizeQuotation),
+      devis: devisWithAttachments,
       bills: bills.items.map(normalizeBill),
     };
   } catch (err) {
@@ -122,6 +148,20 @@ type IfBilling = {
   balance: number;
 };
 
+type IfAttachment = {
+  id: string;
+  name: string;
+  size: number;
+  mimeType: string;
+  href: string;
+  category: string;
+};
+
+type IfQuotationDetail = IfBilling & {
+  fileName: string;
+  attachements: IfAttachment[];
+};
+
 function civilityFromGender(g: string | null | undefined): Civility {
   if (g === "female") return "Mme";
   return "M.";
@@ -174,7 +214,7 @@ function normalizeEvent(e: IfEvent): Intervention {
   };
 }
 
-function normalizeQuotation(q: IfBilling): Devis {
+function normalizeQuotation(q: IfBilling, attachements: IfAttachment[]): Devis {
   const acomptePct = q.balance > 0 && q.amountVAT > 0
     ? Math.round(((q.amountVAT - q.balance) / q.amountVAT) * 100)
     : null;
@@ -190,7 +230,16 @@ function normalizeQuotation(q: IfBilling): Devis {
     soldeRestant: q.balance,
     remise: null,
     acomptePct: acomptePct && acomptePct > 0 ? acomptePct : null,
-    pdfUrl: null,
+    attachments: attachements.map(normalizeAttachment),
+  };
+}
+
+function normalizeAttachment(a: IfAttachment): Attachment {
+  return {
+    id: a.id,
+    name: a.name,
+    size: a.size,
+    mimeType: a.mimeType,
   };
 }
 
@@ -204,6 +253,5 @@ function normalizeBill(b: IfBilling): Bill {
     totalHT: b.amountExcludedTax,
     totalTTC: b.amountVAT,
     soldeRestant: b.balance,
-    pdfUrl: null,
   };
 }

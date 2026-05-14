@@ -1,7 +1,7 @@
 import type { ClientBundle } from "./types";
 
-// Mock data alignée sur la shape REELLE de l'API Inter-Fast (cf. lib/interfast.ts).
-// Clé du dict = ID numérique Inter-Fast (champ `id` côté API, pas le `reference` C0xxx).
+// Mock data alignée sur la shape REELLE de l'API Inter-Fast.
+// Clé du dict = ID numérique Inter-Fast (champ `id`, pas le `reference` C0xxx).
 // Sert de fallback quand IF_API_KEY n'est pas configuré.
 export const MOCK_CLIENTS: Record<string, ClientBundle> = {
   "1491724": {
@@ -19,7 +19,7 @@ export const MOCK_CLIENTS: Record<string, ClientBundle> = {
     },
     devis: [
       {
-        id: "demo-marcel-quotation",
+        id: "6c955199-8ad8-4d1c-83b6-157c174c8cce",
         ref: "DE-11-2025-760",
         name: "Installation d'un bi-split Daikin 4000W",
         status: "paid",
@@ -30,12 +30,25 @@ export const MOCK_CLIENTS: Record<string, ClientBundle> = {
         soldeRestant: 0,
         remise: null,
         acomptePct: 50,
-        pdfUrl: null,
+        attachments: [
+          {
+            id: "056d8a0b-58c9-4eaa-b91e-5998188f46ab",
+            name: "Brochure commercial Stylish.pdf",
+            size: 644583,
+            mimeType: "application/pdf",
+          },
+          {
+            id: "13397d75-9e38-4fac-b79c-2cd127e5da7e",
+            name: "Brochure climatisation-perfera-daikin.pdf",
+            size: 483387,
+            mimeType: "application/pdf",
+          },
+        ],
       },
     ],
     bills: [
       {
-        id: "demo-marcel-bill-acompte",
+        id: "d76196f2-d869-4aa1-87ac-1c8042df6d5c",
         ref: "FA-11-2025-325",
         name: "Facture d'acompte du devis DE-11-2025-760",
         status: "paid",
@@ -43,10 +56,9 @@ export const MOCK_CLIENTS: Record<string, ClientBundle> = {
         totalHT: 2422.46,
         totalTTC: 2807.73,
         soldeRestant: 0,
-        pdfUrl: null,
       },
       {
-        id: "demo-marcel-bill-finale",
+        id: "fa-finale-marcel",
         ref: "FA-11-2026-348",
         name: "Facture finale du devis DE-11-2025-760",
         status: "paid",
@@ -54,7 +66,6 @@ export const MOCK_CLIENTS: Record<string, ClientBundle> = {
         totalHT: 2422.46,
         totalTTC: 2807.73,
         soldeRestant: 0,
-        pdfUrl: null,
       },
     ],
     interventions: [
