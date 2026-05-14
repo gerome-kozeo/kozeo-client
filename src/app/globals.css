@@ -1,0 +1,17 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-rendering: optimizeLegibility;
+  }
+  body {
+    @apply bg-kozeo-beige text-kozeo-navy antialiased;
+    font-feature-settings: "cv02", "cv11";
+  }
+  ::selection {
+    @apply bg-kozeo-vert/30 text-kozeo-navy;
+  }
+}
