@@ -6,12 +6,17 @@ const config: Config = {
     extend: {
       colors: {
         kozeo: {
-          vert: "#0FC98A",
-          "vert-light": "#51DFAF",
-          "vert-dark": "#006A55",
-          navy: "#2F2A3C",
-          orange: "#F88E33",
-          beige: "#FAF7F2",
+          vert: "#00856f",
+          "vert-accent": "#3bb386",
+          "vert-3": "#68bfa3",
+          "vert-4": "#a0d3c0",
+          "vert-dark": "#006a55",
+          violet: "#181326",
+          "violet-clair": "#473e52",
+          gris: "#a0a6a1",
+          light: "#f2f8f5",
+          orange: "#f28a35",
+          jaune: "#f2c167",
         },
       },
       fontFamily: {
@@ -20,6 +25,10 @@ const config: Config = {
       borderRadius: {
         xl: "0.875rem",
         "2xl": "1.25rem",
+        "3xl": "1.75rem",
+      },
+      boxShadow: {
+        card: "0 1px 2px rgba(24,19,38,0.04), 0 8px 24px -12px rgba(24,19,38,0.08)",
       },
     },
   },

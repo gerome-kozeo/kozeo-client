@@ -14,8 +14,8 @@ const variantClass: Record<Variant, string> = {
   primary:
     "bg-kozeo-vert text-white hover:bg-kozeo-vert-dark focus-visible:outline-kozeo-vert-dark",
   secondary:
-    "bg-white text-kozeo-navy border border-kozeo-navy/15 hover:bg-kozeo-beige focus-visible:outline-kozeo-navy",
-  ghost: "bg-transparent text-kozeo-navy hover:bg-kozeo-beige focus-visible:outline-kozeo-navy",
+    "bg-white text-kozeo-violet border border-kozeo-violet/15 hover:bg-kozeo-light focus-visible:outline-kozeo-violet",
+  ghost: "bg-transparent text-kozeo-violet hover:bg-kozeo-light focus-visible:outline-kozeo-violet",
 };
 
 const sizeClass: Record<Size, string> = {

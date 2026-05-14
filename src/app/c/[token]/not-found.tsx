@@ -4,8 +4,8 @@ export default function NotFound() {
       <span className="text-xs font-medium uppercase tracking-wider text-kozeo-vert-dark">
         Espace client Kozéo
       </span>
-      <h1 className="text-3xl font-semibold text-kozeo-navy">Compte introuvable</h1>
-      <p className="text-base text-kozeo-navy/70">
+      <h1 className="text-3xl font-semibold text-kozeo-violet">Compte introuvable</h1>
+      <p className="text-base text-kozeo-violet/70">
         Votre lien est valide mais aucun dossier client ne correspond. Contactez-nous,
         on régularise sous quelques minutes.
       </p>

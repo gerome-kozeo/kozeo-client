@@ -19,7 +19,7 @@ export function Section({ title, eyebrow, children, className }: Props) {
             </span>
           )}
           {title && (
-            <h2 className="text-2xl font-semibold text-kozeo-navy md:text-3xl">{title}</h2>
+            <h2 className="text-2xl font-semibold text-kozeo-violet md:text-3xl">{title}</h2>
           )}
         </header>
       )}

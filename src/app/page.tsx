@@ -4,12 +4,12 @@ export default function Landing() {
       <span className="text-xs font-medium uppercase tracking-wider text-kozeo-vert-dark">
         Espace client Kozéo
       </span>
-      <h1 className="text-3xl font-semibold text-kozeo-navy">Cette page nécessite un lien personnel</h1>
-      <p className="text-base text-kozeo-navy/70">
+      <h1 className="text-3xl font-semibold text-kozeo-violet">Cette page nécessite un lien personnel</h1>
+      <p className="text-base text-kozeo-violet/70">
         Vous avez reçu un lien d'accès par mail après la signature de votre devis.
         Cliquez sur ce lien pour accéder à votre espace.
       </p>
-      <p className="text-sm text-kozeo-navy/50">
+      <p className="text-sm text-kozeo-violet/50">
         Lien introuvable ? Contactez-nous au{" "}
         <a href="tel:0385947502" className="font-medium text-kozeo-vert-dark underline">
           03 85 94 75 02

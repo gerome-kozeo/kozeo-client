@@ -8,10 +8,10 @@
     text-rendering: optimizeLegibility;
   }
   body {
-    @apply bg-kozeo-beige text-kozeo-navy antialiased;
+    @apply bg-kozeo-light text-kozeo-violet antialiased;
     font-feature-settings: "cv02", "cv11";
   }
   ::selection {
-    @apply bg-kozeo-vert/30 text-kozeo-navy;
+    @apply bg-kozeo-vert/30 text-kozeo-violet;
   }
 }

@@ -25,8 +25,8 @@ export function DeroulePose({ categorie }: { categorie: Categorie }) {
                   {i + 1}
                 </span>
                 <div className="flex flex-col gap-1">
-                  <h3 className="text-base font-semibold text-kozeo-navy">{s.title}</h3>
-                  <p className="text-sm text-kozeo-navy/70">{s.description}</p>
+                  <h3 className="text-base font-semibold text-kozeo-violet">{s.title}</h3>
+                  <p className="text-sm text-kozeo-violet/70">{s.description}</p>
                 </div>
               </li>
             ))}

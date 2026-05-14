@@ -11,7 +11,7 @@ const STATUS_BADGE: Record<Intervention["status"], { label: string; className: s
   },
   done: {
     label: "Réalisée",
-    className: "bg-kozeo-navy/5 text-kozeo-navy border-kozeo-navy/15",
+    className: "bg-kozeo-violet/5 text-kozeo-violet border-kozeo-violet/15",
   },
   canceled: {
     label: "Annulée",
@@ -25,7 +25,7 @@ export function InterventionsList({ interventions }: { interventions: Interventi
       <Section title="Vos interventions" eyebrow="Planning">
         <Card>
           <CardContent>
-            <p className="text-sm text-kozeo-navy/60">
+            <p className="text-sm text-kozeo-violet/60">
               Aucune intervention enregistrée pour le moment.
             </p>
           </CardContent>
@@ -45,15 +45,15 @@ export function InterventionsList({ interventions }: { interventions: Interventi
               <Card>
                 <CardContent className="flex flex-col gap-3 pt-5 md:flex-row md:items-center md:justify-between">
                   <div className="flex flex-col gap-1">
-                    <span className="text-xs font-medium uppercase tracking-wider text-kozeo-navy/50">
+                    <span className="text-xs font-medium uppercase tracking-wider text-kozeo-violet/50">
                       {INTERVENTION_LABEL[iv.type]} · {iv.ref}
                     </span>
-                    <h3 className="text-base font-semibold text-kozeo-navy">{iv.title}</h3>
-                    <p className="text-sm text-kozeo-navy/70">
+                    <h3 className="text-base font-semibold text-kozeo-violet">{iv.title}</h3>
+                    <p className="text-sm text-kozeo-violet/70">
                       {formatDateLong(iv.start)} · {formatTimeRange(iv.start, iv.end)}
                     </p>
                     {iv.technicians.length > 0 && (
-                      <p className="text-sm text-kozeo-navy/60">
+                      <p className="text-sm text-kozeo-violet/60">
                         Avec {iv.technicians.join(" & ")}
                       </p>
                     )}

@@ -35,7 +35,7 @@ export default async function ClientPage({ params }: { params: Params }) {
       <DevisList devis={bundle.devis} />
       <DeroulePose categorie={categorie} />
       <ContactBloc />
-      <footer className="border-t border-black/[0.06] pt-6 text-xs text-kozeo-navy/40">
+      <footer className="border-t border-black/[0.06] pt-6 text-xs text-kozeo-violet/40">
         Kozéo · 4 rue de la Vigne, 71100 Saint-Rémy · SIRET 932 002 124 00018
       </footer>
     </main>
