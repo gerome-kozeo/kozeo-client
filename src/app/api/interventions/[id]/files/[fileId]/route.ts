@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { devisBelongsToClient, ifFetchStream } from "@/lib/interfast";
+import { ifFetchStream, interventionBelongsToClient } from "@/lib/interfast";
 import { verifyClientToken } from "@/lib/token";
 
 export const dynamic = "force-dynamic";
@@ -14,20 +14,22 @@ export async function GET(
   const verified = verifyClientToken(token);
   if (!verified.ok) return new Response("Token invalide", { status: 403 });
 
-  const owns = await devisBelongsToClient(params.id, verified.payload.clientId);
+  const owns = await interventionBelongsToClient(params.id, verified.payload.clientId);
   if (!owns) return new Response("Accès refusé", { status: 403 });
 
+  const name = req.nextUrl.searchParams.get("name") || "document";
   const upstream = await ifFetchStream(
-    `/billing/quotations/${encodeURIComponent(params.id)}/files/${encodeURIComponent(params.fileId)}`,
+    `/interventions/${encodeURIComponent(params.id)}/report/files/${encodeURIComponent(params.fileId)}/content/${encodeURIComponent(name)}`,
   );
-  if (!upstream.ok) return new Response("Pièce jointe introuvable", { status: upstream.status });
+  if (!upstream.ok) {
+    return new Response("Fichier introuvable", { status: upstream.status });
+  }
 
-  const filename = req.nextUrl.searchParams.get("name") || "document";
   return new Response(upstream.body, {
     status: 200,
     headers: {
       "Content-Type": upstream.headers.get("Content-Type") || "application/octet-stream",
-      "Content-Disposition": `inline; filename="${filename}"`,
+      "Content-Disposition": `inline; filename="${name}"`,
       "Cache-Control": "private, no-store",
     },
   });

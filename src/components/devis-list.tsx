@@ -11,6 +11,7 @@ const STATUS_BADGE: Record<Devis["status"], { label: string; className: string }
   canceled: { label: "Annulé", className: "bg-kozeo-violet/5 text-kozeo-violet/40 border-kozeo-violet/15" },
   refused: { label: "Refusé", className: "bg-kozeo-orange/10 text-kozeo-orange border-kozeo-orange/30" },
   paid: { label: "Payé", className: "bg-kozeo-vert/15 text-kozeo-vert-dark border-kozeo-vert/40" },
+  unknown: { label: "—", className: "bg-kozeo-violet/5 text-kozeo-violet/50 border-kozeo-violet/15" },
 };
 
 function fmtSize(bytes: number): string {

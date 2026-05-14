@@ -27,7 +27,7 @@ export type Devis = {
   id: string;
   ref: string;
   name: string;
-  status: DevisStatus;
+  status: DevisStatus | "unknown";
   createdAt: string;
   signedAt: string | null;
   totalHT: number;
@@ -42,7 +42,7 @@ export type Bill = {
   id: string;
   ref: string;
   name: string;
-  status: BillStatus;
+  status: BillStatus | "unknown";
   issueDate: string;
   totalHT: number;
   totalTTC: number;
@@ -59,6 +59,13 @@ export type InterventionType =
   | "sav"
   | "autre";
 
+export type InterventionReportFile = {
+  id: string;
+  name: string;
+  category: string;
+  mimeType: string;
+};
+
 export type Intervention = {
   id: string;
   ref: string;
@@ -69,6 +76,7 @@ export type Intervention = {
   status: InterventionStatus;
   technicians: string[];
   address: string | null;
+  reportFiles: InterventionReportFile[];
 };
 
 export type ClientBundle = {

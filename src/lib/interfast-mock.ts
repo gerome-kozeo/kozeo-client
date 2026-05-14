@@ -70,18 +70,26 @@ export const MOCK_CLIENTS: Record<string, ClientBundle> = {
     ],
     interventions: [
       {
-        id: "demo-marcel-178",
+        id: "503180",
         ref: "IN00178",
-        title: "Fiche chantier",
+        title: "Visite technique climatisation",
         type: "visite_technique",
         start: "2025-11-04T09:00:00+01:00",
         end: "2025-11-04T10:00:00+01:00",
         status: "done",
         technicians: ["Gérôme"],
         address: "Fragnes-La Loyère",
+        reportFiles: [
+          {
+            id: "a3102fbb-d479-43f9-ac30-e34eb00fd6c4",
+            name: "IN00178-Marcel Bert-Visite technique climatisation.pdf",
+            category: "report",
+            mimeType: "application/pdf",
+          },
+        ],
       },
       {
-        id: "demo-marcel-206",
+        id: "548853",
         ref: "IN00206",
         title: "Installation 2MXM40 (jour 1)",
         type: "installation",
@@ -90,9 +98,23 @@ export const MOCK_CLIENTS: Record<string, ClientBundle> = {
         status: "done",
         technicians: ["Sami", "Tomas"],
         address: "Fragnes-La Loyère",
+        reportFiles: [
+          {
+            id: "99c1d5dc-6949-4f04-9d43-a67dc8d5cfdc",
+            name: "DE-11-2025-760-Liste articles.pdf",
+            category: "custom",
+            mimeType: "application/pdf",
+          },
+          {
+            id: "98181753-b000-4907-ad97-9ef821f02944",
+            name: "IN00206-Marcel Bert-Installation 2MXM40.pdf",
+            category: "report",
+            mimeType: "application/pdf",
+          },
+        ],
       },
       {
-        id: "demo-marcel-207",
+        id: "548854",
         ref: "IN00207",
         title: "Installation 2MXM40 (jour 2)",
         type: "installation",
@@ -101,6 +123,20 @@ export const MOCK_CLIENTS: Record<string, ClientBundle> = {
         status: "done",
         technicians: ["Sami", "Tomas"],
         address: "Fragnes-La Loyère",
+        reportFiles: [
+          {
+            id: "14b99cd2-a1a2-42f6-867b-20fd726c60ba",
+            name: "DE-11-2025-760-Liste articles.pdf",
+            category: "custom",
+            mimeType: "application/pdf",
+          },
+          {
+            id: "182fd6df-1669-40a6-aa3f-d86b3aa42aa2",
+            name: "IN00207-Marcel Bert-Cerfa-47.pdf",
+            category: "cerfa",
+            mimeType: "application/pdf",
+          },
+        ],
       },
     ],
   },

@@ -10,11 +10,18 @@ import type {
   Devis,
   DevisStatus,
   Intervention,
+  InterventionReportFile,
   InterventionStatus,
   InterventionType,
 } from "./types";
 
 const TIMEOUT_MS = 8000;
+const ALLOWED_DEVIS_STATUS: ReadonlyArray<DevisStatus> = [
+  "draft", "finalized", "sent", "signed", "canceled", "refused", "paid",
+];
+const ALLOWED_BILL_STATUS: ReadonlyArray<BillStatus> = [
+  "draft", "finalized", "sent", "paid", "canceled",
+];
 
 function useMock(): boolean {
   return !process.env.IF_API_KEY;
@@ -30,10 +37,7 @@ async function ifFetch<T>(path: string): Promise<T> {
   const timeout = setTimeout(() => ctrl.abort(), TIMEOUT_MS);
   try {
     const res = await fetch(url, {
-      headers: {
-        "X-Api-Key": process.env.IF_API_KEY!,
-        Accept: "application/json",
-      },
+      headers: { "X-Api-Key": process.env.IF_API_KEY!, Accept: "application/json" },
       signal: ctrl.signal,
       cache: "no-store",
     });
@@ -50,9 +54,7 @@ async function ifFetch<T>(path: string): Promise<T> {
 export async function ifFetchStream(path: string): Promise<Response> {
   const url = `${getBase()}${path}`;
   return fetch(url, {
-    headers: {
-      "X-Api-Key": process.env.IF_API_KEY!,
-    },
+    headers: { "X-Api-Key": process.env.IF_API_KEY! },
     cache: "no-store",
   });
 }
@@ -70,20 +72,28 @@ export async function fetchClientBundle(clientId: string): Promise<ClientBundle 
       ifFetch<IfPaginated<IfBilling>>(`/billing/bills?page=0&size=100&clients[]=${id}`),
     ]);
 
-    const devisWithAttachments = await Promise.all(
-      quotations.items.map(async (q) => {
+    const [devisWithAttachments, interventions] = await Promise.all([
+      Promise.all(quotations.items.map(async (q) => {
         try {
           const detail = await ifFetch<IfQuotationDetail>(`/billing/quotations/${q.id}`);
           return normalizeQuotation(q, detail.attachements ?? []);
         } catch {
           return normalizeQuotation(q, []);
         }
-      }),
-    );
+      })),
+      Promise.all(events.items.map(async (e) => {
+        try {
+          const files = await ifFetch<IfReportFile[]>(`/interventions/${e.id}/report/files`);
+          return normalizeEvent(e, files ?? []);
+        } catch {
+          return normalizeEvent(e, []);
+        }
+      })),
+    ]);
 
     return {
       client: normalizeClient(client),
-      interventions: events.items.map(normalizeEvent),
+      interventions,
       devis: devisWithAttachments,
       bills: bills.items.map(normalizeBill),
     };
@@ -93,7 +103,73 @@ export async function fetchClientBundle(clientId: string): Promise<ClientBundle 
   }
 }
 
+// ───────────── OWNERSHIP CHECKS (sécu : un token client A ne peut pas tirer une ressource du client B)
+
+export async function devisBelongsToClient(devisId: string, clientId: string): Promise<boolean> {
+  if (useMock()) {
+    return Object.values(MOCK_CLIENTS).some(
+      (b) => b.client.id === clientId && b.devis.some((d) => d.id === devisId),
+    );
+  }
+  try {
+    const d = await ifFetch<{ client: { id: number } }>(
+      `/billing/quotations/${encodeURIComponent(devisId)}`,
+    );
+    return String(d.client?.id) === clientId;
+  } catch {
+    return false;
+  }
+}
+
+export async function billBelongsToClient(billId: string, clientId: string): Promise<boolean> {
+  if (useMock()) {
+    return Object.values(MOCK_CLIENTS).some(
+      (b) => b.client.id === clientId && b.bills.some((x) => x.id === billId),
+    );
+  }
+  try {
+    const d = await ifFetch<{ client: { id: number } }>(
+      `/billing/bills/${encodeURIComponent(billId)}`,
+    );
+    return String(d.client?.id) === clientId;
+  } catch {
+    return false;
+  }
+}
+
+export async function interventionBelongsToClient(
+  interventionId: string,
+  clientId: string,
+): Promise<boolean> {
+  if (useMock()) {
+    return Object.values(MOCK_CLIENTS).some(
+      (b) =>
+        b.client.id === clientId &&
+        b.interventions.some((i) => i.id === interventionId),
+    );
+  }
+  try {
+    const d = await ifFetch<{ id: number }>(`/intervention/${encodeURIComponent(interventionId)}`);
+    // Pas de client.id direct sur intervention. Fallback : check via la liste events du client.
+    const id = encodeURIComponent(clientId);
+    const ev = await ifFetch<IfPaginated<IfEvent>>(`/client/${id}/events?page=0&count=200`);
+    return ev.items.some((e) => String(e.id) === String(d.id) || String(e.id) === interventionId);
+  } catch {
+    return false;
+  }
+}
+
+// ───────────── TYPES INTER-FAST
+
 type IfPaginated<T> = { count: number; items: T[] };
+
+type IfContact = {
+  gender: "male" | "female" | string | null;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phoneNumber: string;
+};
 
 type IfClient = {
   id: number;
@@ -101,16 +177,17 @@ type IfClient = {
   name: string;
   displayName: string;
   type: "particular" | "professional" | "ownersAssociation";
-  clientParticular: {
-    contact: {
-      gender: "male" | "female" | string | null;
-      firstName: string;
-      lastName: string;
-      email: string;
-      phoneNumber: string;
-    };
+  clientParticular: { contact: IfContact } | null;
+  clientProfessional: {
+    legalName?: string;
+    contact?: IfContact;
+    contacts?: IfContact[];
   } | null;
-  clientProfessional: { name?: string; legalName?: string } | null;
+  clientOwnersAssociation: {
+    name?: string;
+    contact?: IfContact;
+    contacts?: IfContact[];
+  } | null;
   primaryAddress: {
     address: string;
     additionalLine?: string;
@@ -132,6 +209,14 @@ type IfEvent = {
   client: { id: number; name: string };
   users: Array<{ firstName: string; lastName: string }>;
   address: string | null;
+};
+
+type IfReportFile = {
+  id: string;
+  name: string;
+  category: string;
+  href: string;
+  mimeType: string;
 };
 
 type IfBilling = {
@@ -162,20 +247,34 @@ type IfQuotationDetail = IfBilling & {
   attachements: IfAttachment[];
 };
 
+// ───────────── NORMALIZERS
+
 function civilityFromGender(g: string | null | undefined): Civility {
   if (g === "female") return "Mme";
   return "M.";
 }
 
+function pickContact(c: IfClient): IfContact | null {
+  return (
+    c.clientParticular?.contact ??
+    c.clientProfessional?.contact ??
+    (c.clientProfessional?.contacts?.[0] as IfContact | undefined) ??
+    c.clientOwnersAssociation?.contact ??
+    (c.clientOwnersAssociation?.contacts?.[0] as IfContact | undefined) ??
+    null
+  );
+}
+
 function normalizeClient(c: IfClient): Client {
-  const contact = c.clientParticular?.contact;
+  const contact = pickContact(c);
   const refStr = typeof c.reference === "number" ? `C${c.reference}` : String(c.reference);
+  const fallbackName = (c.displayName || c.name || "").split(" ");
   return {
     id: String(c.id),
     ref: refStr,
     civility: civilityFromGender(contact?.gender ?? null),
-    firstName: contact?.firstName ?? c.displayName.split(" ")[0] ?? "",
-    lastName: contact?.lastName ?? "",
+    firstName: contact?.firstName ?? fallbackName[1] ?? fallbackName[0] ?? "",
+    lastName: contact?.lastName ?? fallbackName[0] ?? "",
     email: contact?.email ?? "",
     phone: contact?.phoneNumber ?? "",
     address: c.primaryAddress?.address ?? "—",
@@ -185,9 +284,9 @@ function normalizeClient(c: IfClient): Client {
 }
 
 function interventionTypeFromIf(t: string): InterventionType {
-  const s = t.toLowerCase();
-  if (/visite/.test(s)) return "visite_technique";
-  if (/installation|pose/.test(s)) return "installation";
+  const s = (t || "").toLowerCase();
+  if (/visite|fiche chantier/.test(s)) return "visite_technique";
+  if (/installation|pose|fin d'installation/.test(s)) return "installation";
   if (/entretien|maintenance|contrôle/.test(s)) return "entretien";
   if (/dépannage|depanage|dépanage/.test(s)) return "depannage";
   if (/sav|garantie/.test(s)) return "sav";
@@ -200,18 +299,31 @@ function interventionStatusFromIf(ev: IfEvent): InterventionStatus {
   return "planned";
 }
 
-function normalizeEvent(e: IfEvent): Intervention {
+function normalizeEvent(e: IfEvent, files: IfReportFile[]): Intervention {
   return {
     id: e.id,
     ref: e.reference,
     title: e.title,
-    type: interventionTypeFromIf(e.type),
+    type: interventionTypeFromIf(e.type || e.title),
     start: e.start,
     end: e.end,
     status: interventionStatusFromIf(e),
     technicians: e.users.map((u) => u.firstName).filter(Boolean),
     address: e.address ?? null,
+    reportFiles: files.map(normalizeReportFile),
   };
+}
+
+function normalizeReportFile(f: IfReportFile): InterventionReportFile {
+  return { id: f.id, name: f.name, category: f.category, mimeType: f.mimeType };
+}
+
+function safeDevisStatus(s: string): DevisStatus | "unknown" {
+  return (ALLOWED_DEVIS_STATUS as ReadonlyArray<string>).includes(s) ? (s as DevisStatus) : "unknown";
+}
+
+function safeBillStatus(s: string): BillStatus | "unknown" {
+  return (ALLOWED_BILL_STATUS as ReadonlyArray<string>).includes(s) ? (s as BillStatus) : "unknown";
 }
 
 function normalizeQuotation(q: IfBilling, attachements: IfAttachment[]): Devis {
@@ -222,7 +334,7 @@ function normalizeQuotation(q: IfBilling, attachements: IfAttachment[]): Devis {
     id: q.id,
     ref: q.reference,
     name: q.name,
-    status: q.status as DevisStatus,
+    status: safeDevisStatus(q.status),
     createdAt: q.issueDate ?? "",
     signedAt: q.signedAt,
     totalHT: q.amountExcludedTax,
@@ -235,12 +347,7 @@ function normalizeQuotation(q: IfBilling, attachements: IfAttachment[]): Devis {
 }
 
 function normalizeAttachment(a: IfAttachment): Attachment {
-  return {
-    id: a.id,
-    name: a.name,
-    size: a.size,
-    mimeType: a.mimeType,
-  };
+  return { id: a.id, name: a.name, size: a.size, mimeType: a.mimeType };
 }
 
 function normalizeBill(b: IfBilling): Bill {
@@ -248,7 +355,7 @@ function normalizeBill(b: IfBilling): Bill {
     id: b.id,
     ref: b.reference,
     name: b.name,
-    status: b.status as BillStatus,
+    status: safeBillStatus(b.status),
     issueDate: b.issueDate ?? "",
     totalHT: b.amountExcludedTax,
     totalTTC: b.amountVAT,

@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { ifFetchStream } from "@/lib/interfast";
+import { devisBelongsToClient, ifFetchStream } from "@/lib/interfast";
 import { verifyClientToken } from "@/lib/token";
 
 export const dynamic = "force-dynamic";
@@ -7,8 +7,12 @@ export const dynamic = "force-dynamic";
 export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
   const token = req.nextUrl.searchParams.get("token");
   if (!token) return new Response("Token requis", { status: 401 });
+
   const verified = verifyClientToken(token);
   if (!verified.ok) return new Response("Token invalide", { status: 403 });
+
+  const owns = await devisBelongsToClient(params.id, verified.payload.clientId);
+  if (!owns) return new Response("Accès refusé", { status: 403 });
 
   const upstream = await ifFetchStream(
     `/billing/quotations/${encodeURIComponent(params.id)}/pdf/devis.pdf?mode=download`,

@@ -64,7 +64,9 @@ export function ClientTabs({ interventions, devis, bills, token }: Props) {
       </nav>
 
       <div role="tabpanel">
-        {active === "interventions" && <InterventionsList interventions={interventions} />}
+        {active === "interventions" && (
+          <InterventionsList interventions={interventions} token={token} />
+        )}
         {active === "devis" && <DevisList devis={devis} token={token} />}
         {active === "factures" && <BillsList bills={bills} token={token} />}
       </div>

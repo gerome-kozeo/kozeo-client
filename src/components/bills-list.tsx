@@ -9,6 +9,7 @@ const STATUS_BADGE: Record<Bill["status"], { label: string; className: string }>
   sent: { label: "À régler", className: "bg-kozeo-orange/10 text-kozeo-orange border-kozeo-orange/30" },
   paid: { label: "Payée", className: "bg-kozeo-vert/15 text-kozeo-vert-dark border-kozeo-vert/40" },
   canceled: { label: "Annulée", className: "bg-kozeo-violet/5 text-kozeo-violet/40 border-kozeo-violet/15" },
+  unknown: { label: "—", className: "bg-kozeo-violet/5 text-kozeo-violet/50 border-kozeo-violet/15" },
 };
 
 export function BillsList({ bills, token }: { bills: Bill[]; token: string }) {
