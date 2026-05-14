@@ -1,4 +1,5 @@
 import { notFound, redirect } from "next/navigation";
+import { BillsList } from "@/components/bills-list";
 import { ClientHeader } from "@/components/client-header";
 import { ContactBloc } from "@/components/contact-bloc";
 import { DeroulePose } from "@/components/deroule-pose";
@@ -33,6 +34,7 @@ export default async function ClientPage({ params }: { params: Params }) {
       <ClientHeader client={bundle.client} />
       <InterventionsList interventions={bundle.interventions} />
       <DevisList devis={bundle.devis} />
+      <BillsList bills={bundle.bills} />
       <DeroulePose categorie={categorie} />
       <ContactBloc />
       <footer className="border-t border-black/[0.06] pt-6 text-xs text-kozeo-violet/40">

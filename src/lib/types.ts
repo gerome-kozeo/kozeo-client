@@ -14,6 +14,7 @@ export type Client = {
 };
 
 export type DevisStatus = "draft" | "finalized" | "sent" | "signed" | "canceled" | "refused" | "paid";
+export type BillStatus = "draft" | "finalized" | "sent" | "paid" | "canceled";
 
 export type Devis = {
   id: string;
@@ -27,6 +28,18 @@ export type Devis = {
   soldeRestant: number;
   remise: number | null;
   acomptePct: number | null;
+  pdfUrl: string | null;
+};
+
+export type Bill = {
+  id: string;
+  ref: string;
+  name: string;
+  status: BillStatus;
+  issueDate: string;
+  totalHT: number;
+  totalTTC: number;
+  soldeRestant: number;
   pdfUrl: string | null;
 };
 
@@ -55,5 +68,6 @@ export type Intervention = {
 export type ClientBundle = {
   client: Client;
   devis: Devis[];
+  bills: Bill[];
   interventions: Intervention[];
 };
