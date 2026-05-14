@@ -9,9 +9,29 @@
   }
   body {
     @apply bg-kozeo-light text-kozeo-violet antialiased;
+    background-image:
+      radial-gradient(circle at top right, rgba(59, 179, 134, 0.06), transparent 50%),
+      radial-gradient(circle at bottom left, rgba(24, 19, 38, 0.04), transparent 60%);
+    background-attachment: fixed;
     font-feature-settings: "cv02", "cv11";
   }
   ::selection {
     @apply bg-kozeo-vert/30 text-kozeo-violet;
+  }
+}
+
+@layer utilities {
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+      transform: translateY(4px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  .animate-fade-in {
+    animation: fade-in 220ms ease-out;
   }
 }

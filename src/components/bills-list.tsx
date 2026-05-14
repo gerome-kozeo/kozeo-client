@@ -1,15 +1,16 @@
 import { Card, CardContent } from "@/components/ui/card";
+import { PdfPreview } from "@/components/pdf-preview";
 import { Section } from "@/components/ui/section";
 import type { Bill } from "@/lib/types";
 import { cn, formatDateShort, formatEUR } from "@/lib/utils";
 
-const STATUS_BADGE: Record<Bill["status"], { label: string; className: string }> = {
-  draft: { label: "Brouillon", className: "bg-kozeo-violet/5 text-kozeo-violet/70 border-kozeo-violet/15" },
-  finalized: { label: "À régler", className: "bg-kozeo-orange/10 text-kozeo-orange border-kozeo-orange/30" },
-  sent: { label: "À régler", className: "bg-kozeo-orange/10 text-kozeo-orange border-kozeo-orange/30" },
-  paid: { label: "Payée", className: "bg-kozeo-vert/15 text-kozeo-vert-dark border-kozeo-vert/40" },
-  canceled: { label: "Annulée", className: "bg-kozeo-violet/5 text-kozeo-violet/40 border-kozeo-violet/15" },
-  unknown: { label: "—", className: "bg-kozeo-violet/5 text-kozeo-violet/50 border-kozeo-violet/15" },
+const STATUS_BADGE: Record<Bill["status"], { label: string; className: string; dot: string }> = {
+  draft: { label: "Brouillon", className: "bg-kozeo-violet/5 text-kozeo-violet/70 border-kozeo-violet/15", dot: "bg-kozeo-violet/40" },
+  finalized: { label: "À régler", className: "bg-kozeo-orange/10 text-kozeo-orange border-kozeo-orange/30", dot: "bg-kozeo-orange" },
+  sent: { label: "À régler", className: "bg-kozeo-orange/10 text-kozeo-orange border-kozeo-orange/30", dot: "bg-kozeo-orange" },
+  paid: { label: "Payée", className: "bg-kozeo-vert/15 text-kozeo-vert-dark border-kozeo-vert/40", dot: "bg-kozeo-vert" },
+  canceled: { label: "Annulée", className: "bg-kozeo-violet/5 text-kozeo-violet/40 border-kozeo-violet/15", dot: "bg-kozeo-violet/30" },
+  unknown: { label: "—", className: "bg-kozeo-violet/5 text-kozeo-violet/50 border-kozeo-violet/15", dot: "bg-kozeo-violet/30" },
 };
 
 export function BillsList({ bills, token }: { bills: Bill[]; token: string }) {
@@ -35,7 +36,7 @@ export function BillsList({ bills, token }: { bills: Bill[]; token: string }) {
           return (
             <li key={b.id}>
               <Card>
-                <CardContent className="flex flex-col gap-3 pt-5">
+                <CardContent className="flex flex-col gap-4 pt-5">
                   <div className="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
                     <div className="flex flex-col gap-1">
                       <span className="text-xs font-medium uppercase tracking-wider text-kozeo-violet/50">
@@ -51,22 +52,20 @@ export function BillsList({ bills, token }: { bills: Bill[]; token: string }) {
                     </div>
                     <span
                       className={cn(
-                        "inline-flex h-7 items-center self-start rounded-full border px-3 text-xs font-medium",
+                        "inline-flex h-7 items-center gap-1.5 self-start rounded-full border px-3 text-xs font-medium",
                         badge.className,
                       )}
                     >
+                      <span className={cn("inline-block h-1.5 w-1.5 rounded-full", badge.dot)} />
                       {badge.label}
                     </span>
                   </div>
-                  <div className="flex flex-wrap gap-2 border-t border-black/[0.05] pt-4">
-                    <a
-                      href={`/api/bills/${b.id}/pdf?token=${encodeURIComponent(token)}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex h-9 items-center gap-1.5 rounded-full bg-kozeo-vert-accent px-4 text-sm font-medium text-white hover:bg-kozeo-vert-dark"
-                    >
-                      📄 Voir la facture PDF
-                    </a>
+                  <div className="flex flex-wrap gap-2">
+                    <PdfPreview
+                      src={`/api/bills/${b.id}/pdf?token=${encodeURIComponent(token)}`}
+                      filename={`facture-${b.ref}.pdf`}
+                      label="Voir la facture"
+                    />
                   </div>
                 </CardContent>
               </Card>

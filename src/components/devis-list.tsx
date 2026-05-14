@@ -1,17 +1,18 @@
 import { Card, CardContent } from "@/components/ui/card";
+import { PdfPreview } from "@/components/pdf-preview";
 import { Section } from "@/components/ui/section";
 import type { Devis } from "@/lib/types";
 import { cn, formatDateShort, formatEUR } from "@/lib/utils";
 
-const STATUS_BADGE: Record<Devis["status"], { label: string; className: string }> = {
-  draft: { label: "Brouillon", className: "bg-kozeo-violet/5 text-kozeo-violet/70 border-kozeo-violet/15" },
-  finalized: { label: "Finalisé", className: "bg-kozeo-violet/5 text-kozeo-violet/70 border-kozeo-violet/15" },
-  sent: { label: "Envoyé", className: "bg-kozeo-orange/10 text-kozeo-orange border-kozeo-orange/30" },
-  signed: { label: "Signé", className: "bg-kozeo-vert/10 text-kozeo-vert-dark border-kozeo-vert/30" },
-  canceled: { label: "Annulé", className: "bg-kozeo-violet/5 text-kozeo-violet/40 border-kozeo-violet/15" },
-  refused: { label: "Refusé", className: "bg-kozeo-orange/10 text-kozeo-orange border-kozeo-orange/30" },
-  paid: { label: "Payé", className: "bg-kozeo-vert/15 text-kozeo-vert-dark border-kozeo-vert/40" },
-  unknown: { label: "—", className: "bg-kozeo-violet/5 text-kozeo-violet/50 border-kozeo-violet/15" },
+const STATUS_BADGE: Record<Devis["status"], { label: string; className: string; dot: string }> = {
+  draft: { label: "Brouillon", className: "bg-kozeo-violet/5 text-kozeo-violet/70 border-kozeo-violet/15", dot: "bg-kozeo-violet/40" },
+  finalized: { label: "Finalisé", className: "bg-kozeo-violet/5 text-kozeo-violet/70 border-kozeo-violet/15", dot: "bg-kozeo-violet/40" },
+  sent: { label: "À signer", className: "bg-kozeo-orange/10 text-kozeo-orange border-kozeo-orange/30", dot: "bg-kozeo-orange" },
+  signed: { label: "Signé", className: "bg-kozeo-vert-accent/15 text-kozeo-vert-dark border-kozeo-vert-accent/40", dot: "bg-kozeo-vert-accent" },
+  canceled: { label: "Annulé", className: "bg-kozeo-violet/5 text-kozeo-violet/40 border-kozeo-violet/15", dot: "bg-kozeo-violet/30" },
+  refused: { label: "Refusé", className: "bg-kozeo-orange/10 text-kozeo-orange border-kozeo-orange/30", dot: "bg-kozeo-orange" },
+  paid: { label: "Réglé", className: "bg-kozeo-vert/15 text-kozeo-vert-dark border-kozeo-vert/40", dot: "bg-kozeo-vert" },
+  unknown: { label: "—", className: "bg-kozeo-violet/5 text-kozeo-violet/50 border-kozeo-violet/15", dot: "bg-kozeo-violet/30" },
 };
 
 function fmtSize(bytes: number): string {
@@ -56,18 +57,19 @@ export function DevisList({ devis, token }: { devis: Devis[]; token: string }) {
                     </div>
                     <span
                       className={cn(
-                        "inline-flex h-7 items-center self-start rounded-full border px-3 text-xs font-medium",
+                        "inline-flex h-7 items-center gap-1.5 self-start rounded-full border px-3 text-xs font-medium",
                         badge.className,
                       )}
                     >
+                      <span className={cn("inline-block h-1.5 w-1.5 rounded-full", badge.dot)} />
                       {badge.label}
                     </span>
                   </div>
 
-                  <dl className="grid grid-cols-2 gap-x-4 gap-y-2 border-t border-black/[0.05] pt-4 text-sm md:grid-cols-4">
+                  <dl className="grid grid-cols-2 gap-x-4 gap-y-3 rounded-2xl bg-kozeo-light/60 p-4 text-sm md:grid-cols-4">
                     <div className="flex flex-col">
                       <dt className="text-xs text-kozeo-violet/50">Total TTC</dt>
-                      <dd className="font-semibold text-kozeo-violet">{formatEUR(d.totalTTC)}</dd>
+                      <dd className="text-base font-bold text-kozeo-violet">{formatEUR(d.totalTTC)}</dd>
                     </div>
                     {d.remise ? (
                       <div className="flex flex-col">
@@ -77,47 +79,40 @@ export function DevisList({ devis, token }: { devis: Devis[]; token: string }) {
                     ) : null}
                     {acompteEur !== null ? (
                       <div className="flex flex-col">
-                        <dt className="text-xs text-kozeo-violet/50">Acompte ({d.acomptePct}%)</dt>
+                        <dt className="text-xs text-kozeo-violet/50">Acompte {d.acomptePct}%</dt>
                         <dd className="font-medium text-kozeo-violet">{formatEUR(acompteEur)}</dd>
                       </div>
                     ) : null}
                     <div className="flex flex-col">
                       <dt className="text-xs text-kozeo-violet/50">Reste à payer</dt>
-                      <dd className={cn("font-semibold", d.soldeRestant > 0 ? "text-kozeo-orange" : "text-kozeo-vert-dark")}>
+                      <dd className={cn("font-bold", d.soldeRestant > 0 ? "text-kozeo-orange" : "text-kozeo-vert-dark")}>
                         {formatEUR(d.soldeRestant)}
                       </dd>
                     </div>
                   </dl>
 
-                  <div className="flex flex-wrap gap-2 border-t border-black/[0.05] pt-4">
-                    <a
-                      href={`/api/devis/${d.id}/pdf?token=${encodeURIComponent(token)}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex h-9 items-center gap-1.5 rounded-full bg-kozeo-vert-accent px-4 text-sm font-medium text-white hover:bg-kozeo-vert-dark"
-                    >
-                      📄 Voir le devis PDF
-                    </a>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <PdfPreview
+                      src={`/api/devis/${d.id}/pdf?token=${encodeURIComponent(token)}`}
+                      filename={`devis-${d.ref}.pdf`}
+                      label="Voir le devis"
+                    />
                   </div>
 
                   {d.attachments.length > 0 ? (
-                    <div className="flex flex-col gap-2 border-t border-black/[0.05] pt-4">
+                    <div className="flex flex-col gap-2 border-t border-kozeo-violet/[0.06] pt-4">
                       <span className="text-xs font-medium uppercase tracking-wider text-kozeo-violet/50">
                         Pièces jointes ({d.attachments.length})
                       </span>
-                      <ul className="flex flex-col gap-1.5">
+                      <ul className="flex flex-wrap gap-2">
                         {d.attachments.map((a) => (
-                          <li key={a.id} className="flex items-center justify-between gap-2">
-                            <a
-                              href={`/api/devis/${d.id}/files/${a.id}?name=${encodeURIComponent(a.name)}&token=${encodeURIComponent(token)}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="flex items-center gap-2 text-sm text-kozeo-vert-dark underline underline-offset-4 hover:text-kozeo-vert"
-                            >
-                              <span aria-hidden>📎</span>
-                              <span className="truncate">{a.name}</span>
-                            </a>
-                            <span className="shrink-0 text-xs text-kozeo-violet/40">{fmtSize(a.size)}</span>
+                          <li key={a.id}>
+                            <PdfPreview
+                              src={`/api/devis/${d.id}/files/${a.id}?name=${encodeURIComponent(a.name)}&token=${encodeURIComponent(token)}`}
+                              filename={a.name}
+                              label={`${a.name.replace(/\.pdf$/i, "")} · ${fmtSize(a.size)}`}
+                              variant="secondary"
+                            />
                           </li>
                         ))}
                       </ul>

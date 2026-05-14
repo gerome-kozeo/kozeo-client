@@ -21,15 +21,14 @@ export async function GET(
   const upstream = await ifFetchStream(
     `/interventions/${encodeURIComponent(params.id)}/report/files/${encodeURIComponent(params.fileId)}/content/${encodeURIComponent(name)}`,
   );
-  if (!upstream.ok) {
-    return new Response("Fichier introuvable", { status: upstream.status });
-  }
+  if (!upstream.ok) return new Response("Fichier introuvable", { status: upstream.status });
 
+  const dl = req.nextUrl.searchParams.get("dl") === "1";
   return new Response(upstream.body, {
     status: 200,
     headers: {
       "Content-Type": upstream.headers.get("Content-Type") || "application/octet-stream",
-      "Content-Disposition": `inline; filename="${name}"`,
+      "Content-Disposition": `${dl ? "attachment" : "inline"}; filename="${name}"`,
       "Cache-Control": "private, no-store",
     },
   });

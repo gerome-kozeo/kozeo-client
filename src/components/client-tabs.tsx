@@ -16,6 +16,27 @@ type Props = {
   token: string;
 };
 
+const TAB_ICONS: Record<Tab, JSX.Element> = {
+  interventions: (
+    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="4" width="18" height="18" rx="2" />
+      <path d="M16 2v4M8 2v4M3 10h18" />
+    </svg>
+  ),
+  devis: (
+    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+      <path d="M14 2v6h6M9 13h6M9 17h6" />
+    </svg>
+  ),
+  factures: (
+    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 12V7H5a2 2 0 0 1 0-4h14v4M3 5v14a2 2 0 0 0 2 2h16v-5" />
+      <path d="M18 12a2 2 0 0 0 0 4h4v-4z" />
+    </svg>
+  ),
+};
+
 export function ClientTabs({ interventions, devis, bills, token }: Props) {
   const [active, setActive] = useState<Tab>("interventions");
 
@@ -30,7 +51,7 @@ export function ClientTabs({ interventions, devis, bills, token }: Props) {
       <nav
         role="tablist"
         aria-label="Vos documents"
-        className="flex gap-1 overflow-x-auto rounded-full border border-kozeo-violet/10 bg-white p-1 shadow-card"
+        className="sticky top-3 z-10 flex gap-1 overflow-x-auto rounded-full border border-kozeo-violet/10 bg-white/90 p-1 shadow-card backdrop-blur"
       >
         {tabs.map((t) => {
           const isActive = active === t.key;
@@ -42,18 +63,23 @@ export function ClientTabs({ interventions, devis, bills, token }: Props) {
               aria-selected={isActive}
               onClick={() => setActive(t.key)}
               className={cn(
-                "flex shrink-0 items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-colors",
+                "group relative flex shrink-0 items-center gap-2 rounded-full px-4 py-2.5 text-sm font-medium transition-all duration-200",
                 "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kozeo-vert-accent",
                 isActive
-                  ? "bg-kozeo-vert-accent text-white shadow-sm"
-                  : "text-kozeo-violet/70 hover:text-kozeo-violet hover:bg-kozeo-light",
+                  ? "bg-kozeo-violet text-white shadow-sm"
+                  : "text-kozeo-violet/70 hover:bg-kozeo-light hover:text-kozeo-violet",
               )}
             >
+              <span className={isActive ? "text-kozeo-vert-accent" : "text-kozeo-violet/40"}>
+                {TAB_ICONS[t.key]}
+              </span>
               <span>{t.label}</span>
               <span
                 className={cn(
-                  "inline-flex h-5 min-w-[1.25rem] items-center justify-center rounded-full px-1.5 text-xs font-semibold",
-                  isActive ? "bg-white/20 text-white" : "bg-kozeo-violet/5 text-kozeo-violet/70",
+                  "inline-flex h-5 min-w-[1.25rem] items-center justify-center rounded-full px-1.5 text-xs font-semibold transition-colors",
+                  isActive
+                    ? "bg-kozeo-vert-accent text-white"
+                    : "bg-kozeo-violet/5 text-kozeo-violet/60 group-hover:bg-kozeo-violet/10",
                 )}
               >
                 {t.count}
@@ -63,7 +89,7 @@ export function ClientTabs({ interventions, devis, bills, token }: Props) {
         })}
       </nav>
 
-      <div role="tabpanel">
+      <div role="tabpanel" className="animate-fade-in">
         {active === "interventions" && (
           <InterventionsList interventions={interventions} token={token} />
         )}

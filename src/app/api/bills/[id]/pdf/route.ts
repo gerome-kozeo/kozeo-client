@@ -19,11 +19,12 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
   );
   if (!upstream.ok) return new Response("Facture introuvable", { status: upstream.status });
 
+  const dl = req.nextUrl.searchParams.get("dl") === "1";
   return new Response(upstream.body, {
     status: 200,
     headers: {
       "Content-Type": upstream.headers.get("Content-Type") || "application/pdf",
-      "Content-Disposition": `inline; filename="facture-${params.id}.pdf"`,
+      "Content-Disposition": `${dl ? "attachment" : "inline"}; filename="facture-${params.id}.pdf"`,
       "Cache-Control": "private, no-store",
     },
   });

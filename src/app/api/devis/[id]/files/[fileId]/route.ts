@@ -23,11 +23,12 @@ export async function GET(
   if (!upstream.ok) return new Response("Pièce jointe introuvable", { status: upstream.status });
 
   const filename = req.nextUrl.searchParams.get("name") || "document";
+  const dl = req.nextUrl.searchParams.get("dl") === "1";
   return new Response(upstream.body, {
     status: 200,
     headers: {
       "Content-Type": upstream.headers.get("Content-Type") || "application/octet-stream",
-      "Content-Disposition": `inline; filename="${filename}"`,
+      "Content-Disposition": `${dl ? "attachment" : "inline"}; filename="${filename}"`,
       "Cache-Control": "private, no-store",
     },
   });
